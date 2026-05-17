@@ -13,7 +13,7 @@
 | 🧒 亲子 | [每日小古文](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/kids/daily-guguwen) | 每天推送一首古文经典，含原文、出处、音频 | ✅ 运行中 |
 | 🧒 亲子 | [每日科学](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/kids/daily-science-kids) | 按科目轮换的儿童科学知识推送 | ✅ 运行中 |
 | 🍳 美食 | [每日菜谱](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/food/daily-recipe-push) | AI 智能选菜 + B站视频 + 飞书推送 | ✅ 运行中 |
-| 📚 学习 | [每日英语](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/learning/daily-english) | 每日英语学习内容推送 | 🚧 待建 |
+| 📚 学习 | [每日英语](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/learning/daily-english) | 12主题轮换 + 地道口语 + 词汇 + 发音示范 | ✅ 运行中 |
 | 🔬 科研 | [科研工具](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/research) | GWAS/MR/生信分析工具集 | 🚧 待建 |
 | 🏠 生活 | [生活工具](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/life) | 日常效率小工具 | 🚧 待建 |
 
@@ -91,16 +91,19 @@ python daily_runner.py          # 正式推送
 
 ### 每日英语 ([`learning/daily-english/`](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/learning/daily-english))
 
-🚧 规划中。已完成[深度可行性分析](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/learning/daily-english/feasibility-analysis.md)（含 9 个仓库/技能的实检分析），待实现。
+✅ 已实现。每日推送一节微型英语课：地道口语 + 主题词汇 + 记忆技巧 + YouGlish 发音。
 
-参考资源：
-- [English Learning Coach](https://clawhub.ai/skills/jiangtaoid/english-learning-coach) — 听说读写方法论
-- [Language Learning Tutor](https://clawhub.ai/skills/chipagosfinest/language-learning) — 100+语言教学模板
-- [Daily English Vocab](https://clawhub.ai/skills/forkercat/daily-english-vocab) — 12类主题轮换 + 两段式课程 ⭐
-- [Did You Know](https://github.com/jonathandeamer/did-you-know) — Wikipedia DYK 趣味事实抓取
-- [PaperClaw](https://github.com/guhaohao0991/PaperClaw) — arXiv 论文智能摘要（科研英语场景）
+- **🗣️ 两段式课程**：Part 1 实用口语（场景+变体+回法）+ Part 2 主题词汇（IPA+例句+记忆技巧）
+- **🔄 12 类主题轮换**：饮食/健康/居家/职场/运动/购物/出行/宠物/家务/娱乐/理财/天气
+- **📊 三级难度**：初级（小学生）/ 中级（初高中）/ 高级（大学职场）
+- **🔊 发音示范**：每条口语带 YouGlish 按钮，一键听真人发音
 
-推荐方案：Daily English Vocab 模板 + MiniMax M2.7 生成 + 飞书推送
+```bash
+cd learning/daily-english
+python daily_english.py --dry
+```
+
+参考：[深度可行性分析](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/learning/daily-english/feasibility-analysis.md)（含 9 个仓库/技能的实检分析）
 
 ---
 
