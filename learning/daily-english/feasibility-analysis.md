@@ -8,7 +8,7 @@
 
 ## 一、四个仓库逐一解剖
 
-### 1. yujiangshui/A-Programmers-Guide-to-English（16.4k ⭐）
+### 1. [yujiangshui/A-Programmers-Guide-to-English](https://github.com/yujiangshui/A-Programmers-Guide-to-English)（16.4k ⭐）
 
 专为程序员编写的英语学习指南。
 
@@ -24,7 +24,7 @@
 
 ---
 
-### 2. yvoronoy/awesome-english（3.5k ⭐）
+### 2. [yvoronoy/awesome-english](https://github.com/yvoronoy/awesome-english)（3.5k ⭐）
 
 精选英语学习资源合集（Awesome List 格式）。
 
@@ -46,7 +46,7 @@
 
 ---
 
-### 4. KoljaB/RealtimeSTT（9.8k ⭐）
+### 4. [KoljaB/RealtimeSTT](https://github.com/KoljaB/RealtimeSTT)（9.8k ⭐）
 
 Python 实时语音转文字库。
 
@@ -257,11 +257,11 @@ AI 层：
 
 ---
 
-### 🥇 English Learning Coach（ClawHub 技能）
+### 🥇 [English Learning Coach](https://clawhub.ai/skills/jiangtaoid/english-learning-coach)（ClawHub 技能）
 
 | 字段 | 实际值（已核实） |
 |------|-----------------|
-| 来源 | ClawHub 技能市场 |
+| 来源 | ClawHub 技能市场 → [clawhub.ai](https://clawhub.ai/skills/jiangtaoid/english-learning-coach) |
 | 作者 | jiangtaoid (Popeye) |
 | 版本 | 1.0.0 |
 | 许可 | MIT-0 |
@@ -294,11 +294,11 @@ AI 层：
 
 ---
 
-### 🥈 Language Learning Tutor（ClawHub 技能）
+### 🥈 [Language Learning Tutor](https://clawhub.ai/skills/chipagosfinest/language-learning)（ClawHub 技能）
 
 | 字段 | 实际值（已核实） |
 |------|-----------------|
-| 来源 | ClawHub 技能市场 |
+| 来源 | ClawHub 技能市场 → [clawhub.ai](https://clawhub.ai/skills/chipagosfinest/language-learning) |
 | 作者 | chipagosfinest (Alec Gutman) |
 | 版本 | 1.0.0 |
 | 许可 | MIT-0 |
@@ -331,11 +331,11 @@ AI 层：
 
 ---
 
-### 🥉 Daily English Vocab（ClawHub 技能）
+### 🥉 [Daily English Vocab](https://clawhub.ai/skills/forkercat/daily-english-vocab)（ClawHub 技能）
 
 | 字段 | 实际值（已核实） |
 |------|-----------------|
-| 来源 | ClawHub 技能市场 |
+| 来源 | ClawHub 技能市场 → [clawhub.ai](https://clawhub.ai/skills/forkercat/daily-english-vocab) |
 | 作者 | forkercat |
 | 版本 | 1.0.0 |
 | 许可 | MIT-0 |
@@ -404,9 +404,10 @@ Part 2: Themed Vocabulary 📚
 
 | 字段 | 实际值（已核实） |
 |------|-----------------|
-| 来源 | ClawHub 技能 + GitHub 仓库 |
+| 来源 | ClawHub 技能 + [GitHub 仓库](https://github.com/jonathandeamer/did-you-know) |
 | 作者 | jonathandeamer |
-| 仓库 | https://github.com/jonathandeamer/did-you-know |
+| 仓库 | [github.com/jonathandeamer/did-you-know](https://github.com/jonathandeamer/did-you-know) |
+| ClawHub | [clawhub.ai/skills/jonathandeamer/did-you-know](https://clawhub.ai/skills/jonathandeamer/did-you-know) |
 | 版本 | 0.2.2 |
 | 许可 | MIT |
 | GitHub 星标 | 0 (新仓库，ClawHub 评分 4.117) |
@@ -459,9 +460,10 @@ did-you-know/
 
 | 字段 | 实际值（已核实） |
 |------|-----------------|
-| 来源 | GitHub 仓库 |
+| 来源 | [GitHub 仓库](https://github.com/guhaohao0991/PaperClaw) |
 | 作者 | guhaohao0991 |
-| 仓库 | https://github.com/guhaohao0991/PaperClaw |
+| 仓库 | [github.com/guhaohao0991/PaperClaw](https://github.com/guhaohao0991/PaperClaw) |
+| ClawHub | [clawhub.ai/skills/guhaohao0991/PaperClaw](https://clawhub.ai/skills/guhaohao0991/PaperClaw) |
 | 星标 | 232 ⭐ |
 | 语言 | Python |
 | 许可 | MIT |

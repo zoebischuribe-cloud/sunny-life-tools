@@ -4,7 +4,7 @@
 
 ## 特性
 
-- **🧠 AI 智能选菜**: MiniMax M2.7 驱动，春秋秋冬不同策略，工作日家常菜/周末大菜
+- **🧠 AI 智能选菜**: 9 种大模型可选（MiniMax / DeepSeek / OpenAI / Groq / 硅基流动 / Moonshot / 智谱 / 通义千问 / Ollama），春秋秋冬不同策略，工作日家常菜/周末大菜
 - **📺 B站视频**: 自动搜索高播放量做菜教程，质量筛选保证能学会
 - **📱 飞书推送**: 富文本卡片消息，带视频直达按钮，永久免费
 - **🔄 品类均衡**: 热菜、凉菜、甜品、汤羹均衡轮换，21天不重复
@@ -51,12 +51,32 @@ pip install requests
 
 也支持企业微信、WxPusher、PushPlus、Server酱（编辑 `config.py` 切换）。
 
-### 3. 配置 AI（可选）
+### 3. 配置 AI（可选，9 种大模型任意选）
 
-MiniMax API Key 获取：[platform.minimaxi.com](https://platform.minimaxi.com/user-center/payment/token-plan)
+支持的 AI 提供商（OpenAI 兼容协议，切换只需改环境变量）：
+
+| 提供商 | `RECIPE_AI_PROVIDER` | 获取 Key |
+|--------|---------------------|----------|
+| MiniMax（默认） | `minimax` | [platform.minimaxi.com](https://platform.minimaxi.com/user-center/payment/token-plan) |
+| DeepSeek | `deepseek` | [platform.deepseek.com](https://platform.deepseek.com/api_keys) |
+| OpenAI | `openai` | [platform.openai.com](https://platform.openai.com/api-keys) |
+| Groq | `groq` | [console.groq.com](https://console.groq.com/keys) |
+| 硅基流动 | `siliconflow` | [siliconflow.cn](https://siliconflow.cn/models) |
+| Moonshot | `moonshot` | [platform.moonshot.cn](https://platform.moonshot.cn/console/api-keys) |
+| 智谱 GLM | `zhipu` | [open.bigmodel.cn](https://open.bigmodel.cn/usercenter/apikeys) |
+| 通义千问 | `qwen` | [dashscope.aliyun.com](https://dashscope.console.aliyun.com/apiKey) |
+| Ollama（本地） | `ollama` | `ollama pull qwen2.5:7b` |
 
 ```powershell
-[Environment]::SetEnvironmentVariable("RECIPE_AI_KEY", "sk-你的MiniMaxKey", "User")
+# 方式一：使用默认 MiniMax
+[Environment]::SetEnvironmentVariable("RECIPE_AI_KEY", "sk-你的Key", "User")
+
+# 方式二：切换到 DeepSeek
+[Environment]::SetEnvironmentVariable("RECIPE_AI_PROVIDER", "deepseek", "User")
+[Environment]::SetEnvironmentVariable("RECIPE_AI_KEY", "sk-你的DeepSeekKey", "User")
+
+# 方式三：本地 Ollama（零成本，完全离线）
+[Environment]::SetEnvironmentVariable("RECIPE_AI_PROVIDER", "ollama", "User")
 ```
 
 不配置也能用，自动降级为规则引擎（同样有季节和星期智能）。
