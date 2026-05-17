@@ -91,13 +91,16 @@ python daily_runner.py          # 正式推送
 
 ### 每日英语 ([`learning/daily-english/`](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/learning/daily-english))
 
-🚧 规划中。已完成[可行性分析](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/learning/daily-english/feasibility-analysis.md)，待实现。
+🚧 规划中。已完成[深度可行性分析](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/learning/daily-english/feasibility-analysis.md)（含 9 个仓库/技能的实检分析），待实现。
 
-计划功能：
-- 每日英文短句 / 单词卡片（MiniMax M2.7 生成）
-- 语法拆解 + 词汇详解 + 记忆技巧
-- 听力和发音音频（YouGlish API）
-- 难度分级（初级/中级/高级）
+参考资源：
+- [English Learning Coach](https://clawhub.ai/skills/jiangtaoid/english-learning-coach) — 听说读写方法论
+- [Language Learning Tutor](https://clawhub.ai/skills/chipagosfinest/language-learning) — 100+语言教学模板
+- [Daily English Vocab](https://clawhub.ai/skills/forkercat/daily-english-vocab) — 12类主题轮换 + 两段式课程 ⭐
+- [Did You Know](https://github.com/jonathandeamer/did-you-know) — Wikipedia DYK 趣味事实抓取
+- [PaperClaw](https://github.com/guhaohao0991/PaperClaw) — arXiv 论文智能摘要（科研英语场景）
+
+推荐方案：Daily English Vocab 模板 + MiniMax M2.7 生成 + 飞书推送
 
 ---
 

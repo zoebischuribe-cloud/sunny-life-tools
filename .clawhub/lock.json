@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "skills": {
+    "english-learning-coach": {
+      "version": "1.0.0",
+      "installedAt": 1779002101796
+    },
+    "language-learning": {
+      "version": "1.0.0",
+      "installedAt": 1779002121279
+    },
+    "daily-english-vocab": {
+      "version": "1.0.0",
+      "installedAt": 1779002125013
+    },
+    "did-you-know": {
+      "version": "0.2.2",
+      "installedAt": 1779002131891
+    }
+  }
+}

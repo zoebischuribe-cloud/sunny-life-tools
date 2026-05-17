@@ -1,6 +1,8 @@
 # 每日英语推送 — 可行性深度分析
 
-> 日期: 2026-05-17 | 模型: Claude Opus 4.7 | 任务: 分析4个英文书签仓库，评估能否复现菜谱模式
+> 日期: 2026-05-17 | 模型: Claude Opus 4.7 | 版本: v2.0
+> 任务: 分析4个英文书签仓库 + 5个ClawHub/GitHub技能，评估能否复现菜谱模式
+> 方法: 每个仓库/技能均通过 gh CLI / clawhub CLI 实际读取真实内容后分析
 
 ---
 
@@ -243,6 +245,336 @@ AI 层：
 
 **可以复现菜谱模式，但数据底座从「本地菜谱库」变成了「MiniMax AI 生成」。**
 核心链路一致：AI 智能生成内容 → 飞书群推送 → 定时任务自动化。
+
+---
+
+---
+
+## 七、ClawHub + GitHub 英语技能深度分析（v2.0 新增）
+
+> 以下 5 个技能/仓库均通过实际联网检索、`clawhub inspect`、`clawhub install` + 读取 SKILL.md、`gh repo view` + `gh api` + curl 下载 README 后逐字分析。
+> 每个结论均附实际检索来源。
+
+---
+
+### 🥇 English Learning Coach（ClawHub 技能）
+
+| 字段 | 实际值（已核实） |
+|------|-----------------|
+| 来源 | ClawHub 技能市场 |
+| 作者 | jiangtaoid (Popeye) |
+| 版本 | 1.0.0 |
+| 许可 | MIT-0 |
+| 评分 | 3.008 |
+| 可安装 | `clawhub install english-learning-coach` |
+| 有数据吗 | **无结构化数据。** 纯 SKILL.md 方法论文档 |
+| 有脚本吗 | **无。** 只有 1 个 SKILL.md (4.8KB) |
+| 有 API 吗 | 无 |
+
+**真实内容剖析（已读 SKILL.md 全文）：**
+
+技能定义了一个 AI 英语教练的角色，包含 6 大模块：
+1. **口语提升** — 影子跟读法步骤、口语练习 Prompt 模板、常用表达示例
+2. **听力提升** — 精听训练法、3 级听力训练层次、资源推荐表
+3. **阅读提升** — SQ3R 阅读法、生词处理策略、分级阅读材料表
+4. **写作提升** — 议论文/邮件结构模板、写作练习 Prompt
+5. **考试准备** — 雅思/托福口语写作题型拆解
+6. **日常练习计划** — 30 分钟每日计划模板（Morning/Commute/Evening）
+
+**对每日英语推送的可用性评估：**
+
+| 可复用部分 | 不可用部分 |
+|-----------|-----------|
+| ✅ 影子跟读法步骤 → 作为 prompt 模板注入 | ❌ 无内容生成能力 |
+| ✅ 精听训练法 → 推送每周挑战任务 | ❌ 无数据底座 |
+| ✅ 口语/写作 Prompt 模板 → 直接复用 | ❌ 不能直接产生每日推送内容 |
+| ✅ 分级资源表 → 指导内容难度 | ❌ 是「方法手册」不是「内容工厂」 |
+
+**结论：不是内容源，是教师手册。** 可以提取其中的方法论模板注入 AI prompt，让生成的英语内容带「教练感」（如跟读提示、分级建议），但不能直接提供推送内容。
+
+---
+
+### 🥈 Language Learning Tutor（ClawHub 技能）
+
+| 字段 | 实际值（已核实） |
+|------|-----------------|
+| 来源 | ClawHub 技能市场 |
+| 作者 | chipagosfinest (Alec Gutman) |
+| 版本 | 1.0.0 |
+| 许可 | MIT-0 |
+| 评分 | 4.318 |
+| 文件数 | 1 个 SKILL.md |
+| 有数据吗 | **有主题词汇分组。** 10 个主题词群，含具体教学结构 |
+| 有脚本吗 | **无。** |
+
+**真实内容剖析（已读 SKILL.md 全文）：**
+
+一个巨无霸级别的 AI 语言导师技能，支持 100+ 语言，7 种教学模式：
+1. **Vocabulary Builder** — 按主题教词（10 组：Greetings/Numbers/Food/Family/Travel/Shopping/…），含 quiz 格式
+2. **Grammar Lessons** — 4 级语法教学（Beginner/Elementary/Intermediate/Advanced）
+3. **Conversation Practice** — 场景模拟 + 错题纠正 + 文化注释
+4. **Flashcard Drill** — 间隔重复抽认卡
+5. **Script & Writing System** — 非拉丁文字教学（中日韩阿俄希……）
+6. **Cultural Context** — 礼貌级别/手势/禁忌/幽默/谚语
+7. **Exam Prep** — DELE/DELF/Goethe/JLPT/HSK/TOPIK 等
+
+**对每日英语推送的可用性评估：**
+
+| 可复用部分 | 不可用部分 |
+|-----------|-----------|
+| ✅ 10 组主题词汇分类 → 可作为内容轮换框架 | ❌ 是交互式教学引擎，不是推送引擎 |
+| ✅ 词条格式（Word-IPA-Meaning-Example-MemoryHook）→ 直接复用 | ❌ 无实际词汇数据库（依赖 AI 生成） |
+| ✅ 场景对话模板 → 作为 AI prompt 模板 | ❌ 不能自动化定时推送 |
+| ✅ Quiz 格式 → 可做成互动卡片 | ❌ 过于庞大，英语只是其 100+ 语言之一 |
+
+**结论：词汇教学格式和主题分类有极高参考价值。** 可以把它的「10 组主题 + 5 词条格式」作为每日英语推送的内容模板。但它本身不产出内容，需要 MiniMax 按模板生成。
+
+---
+
+### 🥉 Daily English Vocab（ClawHub 技能）
+
+| 字段 | 实际值（已核实） |
+|------|-----------------|
+| 来源 | ClawHub 技能市场 |
+| 作者 | forkercat |
+| 版本 | 1.0.0 |
+| 许可 | MIT-0 |
+| 评分 | 4.096 |
+| 文件数 | 1 个 SKILL.md |
+| 有数据吗 | **有！12 个主题类别，每类有具体词条例句** |
+| 有脚本吗 | **无代码文件。** 依赖 OpenClaw cron 调度 |
+
+**真实内容剖析（已读 SKILL.md 全文）：**
+
+**这是 5 个技能中最接近「每日英语推送」目标的一个。** 它本身就是为「daily push」设计的：
+
+**课程结构（已核实）：**
+```
+Part 1: Daily Small Talk 🗣️
+  - Scene（场景）
+  - Phrase（地道表达）
+  - Variations（2-3 个变体）
+  - Natural responses（地道回法）
+  - Chinese translation（中英对照）
+
+Part 2: Themed Vocabulary 📚
+  - 3-5 words with IPA + Chinese meaning + example sentence
+  - 💡 Tip（易混淆词 / 文化注释）
+```
+
+**12 类主题轮换表（每类 2-3 天，完整循环约 1 个月）：**
+1. 🍔 Food & Drinks
+2. 🏥 Body & Health
+3. 🏠 Home & Living
+4. 👔 Work & Office
+5. 🏋️ Fitness & Sports
+6. 🛒 Grocery Shopping
+7. 🚗 Transportation
+8. 🐱 Pets & Animals
+9. 🧹 Daily Chores
+10. 🎮 Entertainment
+11. 💰 Finance
+12. 🌤️ Weather & Nature
+
+**状态追踪机制：**
+```json
+{
+  "currentCategory": 1,
+  "daysOnCategory": 1,
+  "lastRun": "2026-03-15",
+  "wordsUsed": ["booger", "saliva", "sweat"]
+}
+```
+
+**对每日英语推送的可用性评估：**
+
+| 可复用部分 | 不可用部分 |
+|-----------|-----------|
+| ✅ 两段式课程结构 → **直接照搬** | ❌ 无独立 Python 脚本，依赖 OpenClaw 环境 |
+| ✅ 12 类主题轮换表 → **直接照搬** | ❌ 无自己的数据文件 |
+| ✅ 状态追踪 JSON 格式 → **直接复用逻辑** | ❌ 推送格式为 Telegram/Discord，无飞书适配 |
+| ✅ 中英对照 + 美式英语风格 → 与目标用户匹配 | |
+| ✅ 示例输出（含 booger/drool/sweat 等）→ 已验证可运行 | |
+
+**结论：⭐⭐⭐⭐⭐ 最适配。** 它就是为「每日推送英语学习内容」而生的。可以直接把它的 SKILL.md 内容转化为独立的 Python 脚本（daily_english.py），配合 MiniMax M2.7 生成具体内容，飞书推送。
+
+---
+
+### 4. Did You Know（ClawHub + GitHub）
+
+| 字段 | 实际值（已核实） |
+|------|-----------------|
+| 来源 | ClawHub 技能 + GitHub 仓库 |
+| 作者 | jonathandeamer |
+| 仓库 | https://github.com/jonathandeamer/did-you-know |
+| 版本 | 0.2.2 |
+| 许可 | MIT |
+| GitHub 星标 | 0 (新仓库，ClawHub 评分 4.117) |
+| 有数据吗 | **有！Wikipedia DYK 实时数据，无 API Key 需要** |
+| 有脚本吗 | **有！4 个 Python 脚本** |
+
+**真实代码结构（已通过 GitHub README + SKILL.md 核实）：**
+
+```
+did-you-know/
+├── SKILL.md                  # 技能定义 + 完整使用指南
+├── scripts/
+│   ├── dyk.py               # 提供事实（serve one fact）
+│   ├── prefs.py             # 偏好管理（init/list/get/set）
+│   ├── fetch_hooks.py       # 抓取 Wikipedia DYK 新事实
+│   └── write_tags.py        # 给事实打标签
+├── references/
+│   ├── commands.md          # 命令参考
+│   ├── tagging-guide.md     # 标签指南
+│   └── tags.csv             # 20 个 domain 标签 + 9 个 tone 标签
+└── README.md
+```
+
+**核心能力：**
+1. **自动抓取** Wikipedia "Did You Know?" 栏目（志愿者每天更新）
+2. **智能排序** — 20 个领域标签 × 9 个风格标签，支持个性化偏好
+3. **去重缓存** — 看过的不会重复出现
+4. **定时调度** — 通过 OpenClaw cron 每天自动推送
+5. **零 API 依赖** — 纯网页抓取，不需要任何 API key
+
+**20 个领域标签（domain）：** `animals` · `economics_business` · `film` · `history` · `journalism` · `language_linguistics` · `literature` · `medicine_health` · `military_history` · `music` · `mythology_folklore` · `nature` · `performing_arts` · `places` · `religion` · `science` · `sports` · `technology` · `television` · `visual_art`
+
+**9 个风格标签（tone）：** `dark` · `dramatic` · `inspiring` · `poignant` · `provocative` · `quirky` · `straight` · `surprising` · `whimsical`
+
+**对每日英语推送的可用性评估：**
+
+| 可复用部分 | 不可用部分 |
+|-----------|-----------|
+| ✅ Wikipedia DYK 事实抓取 → **可直接作为「英语冷知识」频道** | ❌ 依赖 OpenClaw 调度环境 |
+| ✅ 20 域 × 9 调 标签系统 → 可以筛选适合学习的领域 | ❌ 事实是英文维基条目摘要，非教学格式 |
+| ✅ 自动去重 + 缓存机制 → 直接复用 | ❌ 需要改造输出格式为「英文学习材料」 |
+| ✅ 不需要任何 API key → 零成本零依赖 | |
+| ✅ tags.csv 标签体系 → 可复用为内容分类 | |
+
+**结论：⭐⭐⭐⭐ 适合作为「英语趣味冷知识」补充频道。** 不能替代每日英语教学，但可以做成每周 1-2 次的「Fun Fact Friday」等趣味副线。技术实现最完整（4 个 Python 脚本可独立运行）。
+
+---
+
+### 5. PaperClaw（GitHub 仓库）
+
+| 字段 | 实际值（已核实） |
+|------|-----------------|
+| 来源 | GitHub 仓库 |
+| 作者 | guhaohao0991 |
+| 仓库 | https://github.com/guhaohao0991/PaperClaw |
+| 星标 | 232 ⭐ |
+| 语言 | Python |
+| 许可 | MIT |
+| 有数据吗 | **有。arXiv API 实时论文数据** |
+| 有脚本吗 | **有！完整代码库** |
+
+**真实代码结构（已通过 GitHub README 核实）：**
+
+```
+PaperClaw/
+├── skills/
+│   └── paper-expert-generator/     # 生成领域论文专家Agent的Skill
+│       ├── SKILL.md               # 8步工作流（领域访谈→关键词→脚手架→交付）
+│       ├── scripts/
+│       │   └── init_domain_agent.py   # 自动脚手架脚本
+│       ├── references/
+│       │   ├── domain-adaptation-guide.md  # 8个领域示例
+│       │   └── agent-template-guide.md
+│       └── assets/templates/      # AGENT.md/models.json/schedules.json 模板
+│
+├── agents/
+│   └── surrogate-modeling/        # Demo: Scientific ML + 3D Geometry
+│       ├── agent/AGENT.md         # Agent 角色定义
+│       ├── skills/
+│       │   ├── arxiv-search/      # arXiv 批量搜索 + 去重
+│       │   ├── semantic-scholar/  # 引用数据 API
+│       │   ├── paper-review/      # 论文评估 + 安全写入
+│       │   ├── daily-search/      # 每日自动检索
+│       │   └── weekly-report/     # 周报生成
+│       └── docs/architecture.md
+```
+
+**核心能力：**
+1. **每日论文检索** — arXiv API 批量搜索，自动去重，精选 Top 3
+2. **深度总结** — 回答 10 个核心问题，生成结构化 summary.md
+3. **四维评分** — 可定制的领域专属评分维度 + Date-Citation 权重
+4. **周报生成** — Top 3 精选报告，支持推送通知
+5. **领域生成器** — `init_domain_agent.py` 可为任意领域自动生成专家 Agent
+
+**对每日英语推送的可用性评估：**
+
+| 可复用部分 | 不可用部分 |
+|-----------|-----------|
+| ✅ arXiv 每日检索架构 → 可改为「每日英文论文摘要推送」 | ❌ 核心目的是科研论文，不是英语教学 |
+| ✅ 自动去重 + 评分 → 直接复用逻辑 | ❌ 需要领域知识才能理解内容 |
+| ✅ weekly-report → 可做「每周英语学习进度报告」 | ❌ 对非科研用户无意义 |
+| ✅ 领域生成器 → 可创建「英语学习论文专家」Agent | |
+
+**结论：⭐⭐⭐ 适合科研英语场景。** 如果你订阅 `q-bio`（生物信息学）或 `cs.CL`（NLP）类别的论文，可以每天推送一篇英文论文摘要 + 关键图表 + 中文解读。这同时满足了「阅读前沿论文」和「练习英语」两个目标。但对普通英语学习者不适用。
+
+---
+
+## 八、5技能综合对比 & 推荐方案
+
+### 与菜谱架构的适配度
+
+| 技能 | 数据底座 | AI 选择 | 推送格式 | 适配度 |
+|------|---------|---------|---------|--------|
+| daily-english-vocab | ⭐⭐⭐ 12主题+词条模板 | ⭐⭐⭐ MiniMax 填充内容 | ⭐⭐ 需适配飞书 | **最高** |
+| did-you-know | ⭐⭐⭐⭐⭐ Wikipedia 实时 | ⭐⭐ 标签偏好排序 | ⭐⭐ 需适配飞书 | **高** |
+| english-learning-coach | ⭐ 方法论无数据 | ⭐⭐⭐ 方法论注入 prompt | ⭐ 纯方法 | 中 |
+| language-learning | ⭐⭐ 主题分类+格式 | ⭐⭐⭐ 词条格式注入 prompt | ⭐ 纯教学 | 中 |
+| PaperClaw | ⭐⭐⭐⭐⭐ arXiv 实时 | ⭐⭐⭐⭐ 领域评分引擎 | ⭐⭐⭐ 已有周报 | 中（科研向） |
+
+### 推荐方案：组合拳
+
+不是选一个，而是组合：
+
+```
+每日英语推送系统 v2.0
+│
+├─ 主频道：Daily English Vocab 模式
+│   ├─ 内容模板 → 从 daily-english-vocab 照搬（Part1口语 + Part2词汇）
+│   ├─ AI 生成 → MiniMax M2.7 按模板生成具体内容
+│   └─ 推送 → 飞书群机器人卡片
+│
+├─ 副频道：Did You Know 模式（每周六）
+│   ├─ 内容源 → Wikipedia DYK 实时抓取
+│   ├─ 标签筛选 → 偏好 history + science + quirky
+│   └─ 推送 → 飞书群「趣味英语冷知识」
+│
+├─ 方法论层：English Learning Coach
+│   ├─ 影子跟读法 → 每周推送跟读挑战
+│   ├─ 精听训练 → 月度听力材料推荐
+│   └─ 注入 AI prompt → 让每日内容有「教练感」
+│
+└─ 科研副线（可选）：PaperClaw
+    └─ 订阅 q-bio + cs.CL → 每周推送 1 篇英文论文摘要
+```
+
+### 实现优先级
+
+| 优先级 | 模块 | 依赖 | 预计时间 |
+|--------|------|------|---------|
+| P0 | Daily English Vocab（主频道） | MiniMax M2.7 | 今天就做 |
+| P1 | Did You Know（趣味副线） | 零依赖 | 30min |
+| P2 | Coach 方法论注入 | 修改 AI prompt | 10min |
+| P3 | PaperClaw 科研线 | arXiv API | 后续 |
+
+---
+
+## 九、最终结论
+
+| 对比维度 | 菜谱系统 | 英语系统 |
+|---------|---------|---------|
+| 数据底座 | HowToCook (357道菜) | daily-english-vocab (12主题模板) + Wikipedia DYK |
+| AI 引擎 | MiniMax 选菜 | MiniMax 生成内容 |
+| 视频源 | Bilibili API | YouGlish API（发音示范） |
+| 推送通道 | 飞书群机器人 | 飞书群机器人（同一通道） |
+| 定时任务 | Windows Task Scheduler | Windows Task Scheduler（同一方式） |
+| 月成本 | ~¥2-5 | ~¥2-5（仅 MiniMax API） |
+
+**可以复现。** 菜谱是「选」的模式，英语是「生成」的模式——但核心技术栈完全相同（MiniMax + 飞书 + Windows 定时任务）。daily-english-vocab 的 12 类主题轮换 + 两段式课程结构，就是英语系统的「recipes.json」。
 
 ---
 
