@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+
+# Sensitive data
+.env
+*.token
+history.json
+state.json
+*_cache.json
+
+# Source data (cloned repos)
+HowToCook_repo/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Audio/asset archives (large files)
+*.zip
+*.tar.gz
+*.7z
