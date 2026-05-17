@@ -10,12 +10,12 @@
 
 | 分类 | 工具 | 说明 | 状态 |
 |------|------|------|------|
-| 🧒 亲子 | [每日小古文](kids/daily-guguwen/) | 每天推送一首古文经典，含原文、出处、音频 | ✅ 运行中 |
-| 🧒 亲子 | [每日科学](kids/daily-science-kids/) | 按科目轮换的儿童科学知识推送 | ✅ 运行中 |
-| 🍳 美食 | [每日菜谱](food/daily-recipe-push/) | AI 智能选菜 + B站视频 + 飞书推送 | ✅ 运行中 |
-| 📚 学习 | [每日英语](learning/daily-english/) | 每日英语学习内容推送 | 🚧 待建 |
-| 🔬 科研 | [科研工具](research/) | GWAS/MR/生信分析工具集 | 🚧 待建 |
-| 🏠 生活 | [生活工具](life/) | 日常效率小工具 | 🚧 待建 |
+| 🧒 亲子 | [每日小古文](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/kids/daily-guguwen) | 每天推送一首古文经典，含原文、出处、音频 | ✅ 运行中 |
+| 🧒 亲子 | [每日科学](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/kids/daily-science-kids) | 按科目轮换的儿童科学知识推送 | ✅ 运行中 |
+| 🍳 美食 | [每日菜谱](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/food/daily-recipe-push) | AI 智能选菜 + B站视频 + 飞书推送 | ✅ 运行中 |
+| 📚 学习 | [每日英语](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/learning/daily-english) | 每日英语学习内容推送 | 🚧 待建 |
+| 🔬 科研 | [科研工具](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/research) | GWAS/MR/生信分析工具集 | 🚧 待建 |
+| 🏠 生活 | [生活工具](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/life) | 日常效率小工具 | 🚧 待建 |
 
 ---
 
@@ -83,18 +83,21 @@ python daily_runner.py --dry    # 试运行
 python daily_runner.py          # 正式推送
 ```
 
-详见 [完整 SOP 文档](food/daily-recipe-push/docs/SOP.md)。
+详见 [完整 SOP 文档](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/food/daily-recipe-push/docs/SOP.md)。
 
 ---
 
 ## 📚 学习
 
-### 每日英语 (`learning/daily-english/`)
+### 每日英语 ([`learning/daily-english/`](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/learning/daily-english))
 
-🚧 规划中。计划功能：
-- 每日英文短句 / 单词卡片
-- 听力和发音音频
-- 情景对话练习
+🚧 规划中。已完成[可行性分析](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/learning/daily-english/feasibility-analysis.md)，待实现。
+
+计划功能：
+- 每日英文短句 / 单词卡片（MiniMax M2.7 生成）
+- 语法拆解 + 词汇详解 + 记忆技巧
+- 听力和发音音频（YouGlish API）
+- 难度分级（初级/中级/高级）
 
 ---
 

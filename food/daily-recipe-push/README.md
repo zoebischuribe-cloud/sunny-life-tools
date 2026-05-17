@@ -9,7 +9,7 @@
 - **📱 飞书推送**: 富文本卡片消息，带视频直达按钮，永久免费
 - **🔄 品类均衡**: 热菜、凉菜、甜品、汤羹均衡轮换，21天不重复
 - **🛡️ 容错降级**: AI 不可用时自动切换规则引擎，同样智能
-- **📊 357道菜谱**: 来自 Anduin2017/HowToCook (10万⭐), 结构规整
+- **📊 357道菜谱**: 来自 [Anduin2017/HowToCook](https://github.com/Anduin2017/HowToCook) (10万⭐), 结构规整
 
 ## 架构
 
@@ -53,6 +53,8 @@ pip install requests
 
 ### 3. 配置 AI（可选）
 
+MiniMax API Key 获取：[platform.minimaxi.com](https://platform.minimaxi.com/user-center/payment/token-plan)
+
 ```powershell
 [Environment]::SetEnvironmentVariable("RECIPE_AI_KEY", "sk-你的MiniMaxKey", "User")
 ```
@@ -89,17 +91,17 @@ crontab -e
 
 | 文件 | 作用 |
 |------|------|
-| `daily_runner.py` | 主入口，一条命令跑全流程 |
-| `ai_selector.py` | MiniMax AI 选菜 + 规则引擎降级 |
-| `bilibili_search.py` | B站视频搜索 + 质量筛选 |
-| `wechat_push.py` | 推送（飞书/企业微信/WxPusher/PushPlus/Server酱） |
-| `config.py` | 集中配置 |
-| `extract_recipes.py` | 菜谱提取（一次性） |
-| `install_schedule.ps1` | Windows 定时任务 |
-| `landing_server.py` | Landing Page API |
-| `landing/` | H5 落地页 |
-| `recipes.json` | 357 道菜谱 |
-| `docs/SOP.md` | **完整从0到1搭建文档** |
+| [`daily_runner.py`](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/food/daily-recipe-push/daily_runner.py) | 主入口，一条命令跑全流程 |
+| [`ai_selector.py`](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/food/daily-recipe-push/ai_selector.py) | MiniMax AI 选菜 + 规则引擎降级 |
+| [`bilibili_search.py`](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/food/daily-recipe-push/bilibili_search.py) | B站视频搜索 + 质量筛选 |
+| [`wechat_push.py`](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/food/daily-recipe-push/wechat_push.py) | 推送（飞书/企业微信/WxPusher/PushPlus/Server酱） |
+| [`config.py`](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/food/daily-recipe-push/config.py) | 集中配置 |
+| [`extract_recipes.py`](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/food/daily-recipe-push/extract_recipes.py) | 菜谱提取（一次性） |
+| [`install_schedule.ps1`](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/food/daily-recipe-push/install_schedule.ps1) | Windows 定时任务 |
+| [`landing_server.py`](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/food/daily-recipe-push/landing_server.py) | Landing Page API |
+| [`landing/`](https://github.com/zoebischuribe-cloud/sunny-life-tools/tree/master/food/daily-recipe-push/landing) | H5 落地页 |
+| [`recipes.json`](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/food/daily-recipe-push/recipes.json) | 357 道菜谱 |
+| [`docs/SOP.md`](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/food/daily-recipe-push/docs/SOP.md) | **完整从0到1搭建文档** |
 
 ## 成本
 
@@ -112,4 +114,4 @@ crontab -e
 
 ## 完整SOP
 
-详见 [docs/SOP.md](docs/SOP.md) — 从环境准备到定时任务，10个Phase完整教程，可复现。
+详见 [完整 SOP 文档](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/food/daily-recipe-push/docs/SOP.md) — 从环境准备到定时任务，10个Phase完整教程，可复现。
