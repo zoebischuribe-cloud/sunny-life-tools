@@ -31,20 +31,28 @@ from config import (
 
 # ── Content Sources ──
 
-# High-quality topics for English learning (exam/business/tech/geography focused)
+# High-quality topics + real RSS/news sources
 TOPICS = [
-    {"name": "Artificial Intelligence", "cn": "人工智能", "search": "artificial intelligence technology"},
-    {"name": "Climate & Environment", "cn": "气候环境", "search": "climate change environment"},
-    {"name": "Global Economy", "cn": "全球经济", "search": "economy business finance"},
-    {"name": "Space & Science", "cn": "太空科学", "search": "space exploration science discovery"},
-    {"name": "World History", "cn": "世界历史", "search": "world history civilization"},
-    {"name": "Health & Medicine", "cn": "健康医学", "search": "health medicine medical research"},
-    {"name": "Technology & Innovation", "cn": "科技创新", "search": "technology innovation engineering"},
-    {"name": "Nature & Geography", "cn": "自然地理", "search": "nature geography wildlife"},
-    {"name": "Culture & Arts", "cn": "文化艺术", "search": "culture art literature music"},
-    {"name": "Sports & Adventure", "cn": "体育探险", "search": "sports adventure exploration"},
-    {"name": "Psychology & Brain", "cn": "心理脑科学", "search": "psychology neuroscience brain"},
-    {"name": "Food & Travel", "cn": "美食旅行", "search": "food cuisine travel destination"},
+    {"name": "AI & Technology", "cn": "人工智能", "search": "artificial intelligence technology",
+     "rss": "https://feeds.npr.org/1019/rss.xml"},
+    {"name": "Climate & Science", "cn": "气候科学", "search": "climate change environment",
+     "rss": "https://feeds.npr.org/1007/rss.xml"},
+    {"name": "Business & Economy", "cn": "商业经济", "search": "economy business finance",
+     "rss": "https://feeds.npr.org/1006/rss.xml"},
+    {"name": "World News", "cn": "国际新闻", "search": "world news current events",
+     "rss": "https://feeds.npr.org/1001/rss.xml"},
+    {"name": "Health & Medicine", "cn": "健康医学", "search": "health medicine medical research",
+     "rss": "https://feeds.npr.org/1030/rss.xml"},
+    {"name": "Space & Discovery", "cn": "太空探索", "search": "space exploration science discovery",
+     "rss": "https://feeds.npr.org/1007/rss.xml"},
+    {"name": "Tech & Innovation", "cn": "科技创新", "search": "technology innovation engineering",
+     "rss": "https://rss.nytimes.com/services/xml/rss/nyt/Technology.xml"},
+    {"name": "Nature & Geography", "cn": "自然地理", "search": "nature geography wildlife",
+     "rss": "https://feeds.npr.org/1001/rss.xml"},
+    {"name": "Culture & Arts", "cn": "文化艺术", "search": "culture art literature music",
+     "rss": "https://feeds.npr.org/1001/rss.xml"},
+    {"name": "Psychology & Brain", "cn": "心理脑科学", "search": "psychology neuroscience brain",
+     "rss": "https://feeds.npr.org/1007/rss.xml"},
 ]
 
 def fetch_wikipedia_by_topic(topic_idx=None):
@@ -138,6 +146,56 @@ def fetch_wikipedia_featured(date_str=None):
     except Exception as e:
         print(f"  Wikipedia featured error: {e}")
     return None
+
+def fetch_rss_article(topic_idx=None):
+    """Fetch a real news article from NPR/NYT RSS feed for the topic. Free, no key."""
+    if topic_idx is None:
+        topic_idx = datetime.now().day % len(TOPICS)
+    topic = TOPICS[topic_idx % len(TOPICS)]
+    rss_url = topic.get("rss", "")
+    if not rss_url:
+        return None
+
+    try:
+        r = requests.get(rss_url, headers={"User-Agent": "DailyEnglishBot/1.0"},
+                         proxies=PROXIES, timeout=12)
+        if r.status_code == 200:
+            import xml.etree.ElementTree as ET
+            root = ET.fromstring(r.text)
+            items = []
+            ns = {"content": "http://purl.org/rss/1.0/modules/content/",
+                  "dc": "http://purl.org/dc/elements/1.1/",
+                  "media": "http://search.yahoo.com/mrss/",
+                  "nyt": "http://www.nytimes.com/namespaces/rss/2.0"}
+            for item in root.findall(".//item")[:15]:
+                title = (item.findtext("title","") or "").strip()
+                desc = (item.findtext("description","") or "").strip()
+                link = (item.findtext("link","") or "").strip()
+                # Get full content if available
+                content_el = item.find("content:encoded", ns)
+                if content_el is None:
+                    content_el = item.find("content", ns)
+                full = content_el.text.strip() if content_el is not None and content_el.text else desc
+                # Clean HTML tags from description
+                clean = re.sub(r'<[^>]+>', '', desc)
+                if title and (clean or full):
+                    items.append({"title": title, "description": clean, "full_text": full[:1200], "url": link})
+            if items:
+                import random as _random
+                chosen = _random.choice(items[:8])
+                return {
+                    "title": chosen["title"],
+                    "extract": chosen["full_text"] or chosen["description"],
+                    "description": re.sub(r'<[^>]+>', '', chosen["description"])[:200],
+                    "url": chosen["url"],
+                    "topic": topic,
+                    "source": "NPR" if "npr" in rss_url else "NYT",
+                }
+    except Exception as e:
+        print(f"  RSS fetch error ({topic['name']}): {e}")
+
+    # Fallback: Wikipedia topic search
+    return fetch_wikipedia_by_topic(topic_idx)
 
 def search_youtube_video(query, max_results=5):
     """Search YouTube for educational videos (no API key needed — uses search URL)."""
@@ -695,7 +753,9 @@ def main():
     # ── Mode A: TED Deep Lesson ──
     if source == "ted":
         print("\n--- TED 深度学习模式 ---")
-        wiki = fetch_wikipedia_by_topic(topic_arg)
+        wiki = fetch_rss_article(topic_arg)
+        if not wiki:
+            wiki = fetch_wikipedia_by_topic(topic_arg)
         if not wiki:
             wiki = fetch_wikipedia_featured()
         if wiki:
@@ -738,7 +798,9 @@ def main():
     # ── Mode B: Wikipedia Reading ──
     if source == "wiki":
         print("\n--- Wikipedia 阅读模式 ---")
-        wiki = fetch_wikipedia_by_topic(topic_arg)
+        wiki = fetch_rss_article(topic_arg)
+        if not wiki:
+            wiki = fetch_wikipedia_by_topic(topic_arg)
         if not wiki:
             wiki = fetch_wikipedia_featured()
         if wiki:
@@ -794,42 +856,53 @@ def main():
             print("  Dictionary API 不可用，回退口语模式")
             source = "auto"
 
-    # ── Mode C: Vocab + Small Talk (default/fallback) ──
+    # ── Mode C: Real News Reading (default) ──
     if source == "auto":
-        print("\n--- 主题口语模式 ---")
+        print("\n--- 实时新闻阅读模式 ---")
         state = advance_category(state)
-        cat = CATEGORIES[state["currentCategory"]]
-        print(f"  今日主题: {cat['name']}（{cat['cn']}）[{cat['id']}/12]")
 
-        lesson = None
-        if AI_API_KEY and not mock:
-            print(f"  调用 {AI_PROVIDER} 生成...")
-            lesson = generate_vocab_lesson(state["currentCategory"], state)
+        # Fetch real RSS news article
+        article = fetch_rss_article(topic_arg)
+        if not article:
+            article = fetch_wikipedia_by_topic(topic_arg)
+        if not article:
+            article = fetch_wikipedia_featured()
 
-        if not lesson:
-            print("  使用规则引擎生成...")
-            lesson = fallback_vocab_lesson(state["currentCategory"], state)
+        if article:
+            topic_info = article.get("topic", {})
+            source_name = article.get("source", "News")
+            print(f"  来源: {source_name} | 话题: {topic_info.get('name','')}（{topic_info.get('cn','')}）")
+            print(f"  文章: {article['title'][:60]}")
 
-        if not lesson:
-            print("  生成失败")
+            lesson = None
+            if AI_API_KEY and not mock:
+                print(f"  调用 {AI_PROVIDER} 生成新闻阅读课...")
+                lesson = generate_wiki_lesson(article)  # reuse wiki lesson generator
+
+            if not lesson:
+                title = article.get("title","News")
+                extract = article.get("extract","")[:200]
+                lesson = {
+                    "article_title": title,
+                    "summary_cn": f"这是一篇来自{source_name}的英文新闻。{article.get('description','')[:80]}",
+                    "key_vocab": [{"word": w.lower(), "ipa": "", "meaning": "请查阅词典", "sentence": extract[:80]}
+                        for w in re.findall(r'[A-Z][a-z]{5,15}', extract)[:3]],
+                    "grammar_point": "注意新闻英语的时态使用（通常过去时和现在完成时）",
+                    "reading_tip": "先读标题和首段了解大意，再逐段精读",
+                }
+
+            yt_videos = search_youtube_video(f"{article.get('title','')} explained")
+            bl_videos = search_bilibili_english(f"{topic_info.get('name','')} {article.get('title','')}")
+            card = format_wiki_card(lesson, article, yt_videos, bl_videos)
+            print(f"  词汇数: {len(lesson.get('key_vocab',[]))}")
+
+            # Track vocab
+            rstate = load_review_state()
+            rstate = add_words_batch(rstate, lesson.get("key_vocab", []))
+            save_review_state(rstate)
+        else:
+            print("  无可用的新闻源，请检查网络")
             return 1
-
-        print(f"  口语: {lesson.get('phrase','')[:50]}")
-        print(f"  词汇数: {len(lesson.get('vocab',[]))}")
-
-        # Track used words
-        for v in lesson.get("vocab", []):
-            if v.get("word") and v["word"] not in state["wordsUsed"]:
-                state["wordsUsed"].append(v["word"])
-        save_state(state)
-
-        # Auto-register vocab for SM-2 review
-        rstate = load_review_state()
-        rstate = add_words_batch(rstate, lesson.get("vocab", []))
-        rstate["last_review"] = rstate.get("last_review", datetime.now().strftime("%Y-%m-%d"))
-        save_review_state(rstate)
-
-        card = format_vocab_card(lesson, state["currentCategory"])
 
     # ── Mode D: SM-2 Review ──
     if source == "review":
