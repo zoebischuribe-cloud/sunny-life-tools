@@ -7,16 +7,22 @@ Content sources:
   - Wikipedia API (random/featured articles, free, no key)
   - Free Dictionary API (random word with IPA + definitions)
 
+SM-2 Review:
+  - Auto-tracks all vocabulary from lessons
+  - python daily_english.py --review    # Run spaced repetition review
+
 Usage:
   python daily_english.py              # Full run (AI + push)
   python daily_english.py --dry        # Dry run (no push)
   python daily_english.py --mock       # Rule-based fallback (no AI API)
   python daily_english.py --source wiki  # Force Wikipedia mode
+  python daily_english.py --review     # SM-2 review session
 """
 import json, re, random, sys
 import requests
 from datetime import datetime
 from pathlib import Path
+from sm2 import load_review_state, save_review_state, add_words_batch, add_word, get_due_words, sm2_update, get_stats
 
 from config import (
     STATE_FILE, AI_BASE_URL, AI_API_KEY, AI_MODEL, AI_PROVIDER,
@@ -405,13 +411,67 @@ def push_to_feishu(card, dry=False):
         print(f"  飞书 error: {e}")
         return False
 
+# ── SM-2 Review ──
+
+def _generate_review_quiz(review_words):
+    """Generate a review quiz using AI based on SM-2 due words."""
+    words_text = "\n".join(
+        f"- {w['word']} ({w.get('ipa','')}): {w.get('meaning','')}"
+        + (f" e.g. {w.get('example','')}" if w.get('example') else "")
+        for w in review_words
+    )
+    system_prompt = (
+        "你是英语复习教练。根据待复习词汇生成一套快速自测题。\n"
+        "返回纯JSON：\n"
+        '{"title":"今日复习","words":['
+        '{"word":"词","hint":"提示(不直接给答案)","answer":"中文意思","example":"例句"},...],'
+        '"tip":"复习建议(20字)"}'
+    )
+    user_prompt = f"待复习词汇：\n{words_text}\n请生成复习自测题。"
+    return _call_ai(system_prompt, user_prompt)
+
+def format_review_card(lesson, review_words):
+    """Build SM-2 review card for Feishu."""
+    today = datetime.now().strftime("%Y-%m-%d")
+    words_section = ""
+    if lesson and "words" in lesson:
+        words_section = "\n".join(
+            f"**{i+1}. {w.get('word','')}**\n"
+            f"　💬 {w.get('hint','')}\n"
+            f"　<font color='grey'>答案：{w.get('answer','')}</font>\n"
+            f"　📖 {w.get('example','')}"
+            for i, w in enumerate(lesson.get("words", []))
+        )
+    else:
+        words_section = "\n".join(
+            f"**{i+1}. {w.get('word','')}** {w.get('ipa','')}\n"
+            f"　{w.get('meaning','')}"
+            for i, w in enumerate(review_words)
+        )
+
+    content = (
+        f"**🔄 间隔复习** | SM-2 算法\n\n"
+        f"{words_section}\n\n"
+        f"━━━━━━━━━━━━━━━━━━\n\n"
+        f"**📊 自评标准：**\n"
+        f"• 5分 = 秒懂，脱口而出\n"
+        f"• 4分 = 想了一下，答对了\n"
+        f"• 3分 = 有点卡，但最终对了\n"
+        f"• 2分 = 答错了，看到答案就想起\n"
+        f"• 1分 = 答错了，看到答案也没印象\n"
+        f"• 0分 = 完全不记得\n\n"
+        f"💡 {lesson.get('tip','') if lesson else '诚实自评，效果翻倍！'}"
+    )
+    return _build_card(f"🔄 英语复习 | {today}", "purple", content, None, "")
+
 # ── Main ──
 
 def main():
     dry = "--dry" in sys.argv
     mock = "--mock" in sys.argv
-    source = "wiki" if "--source" in sys.argv and "wiki" in sys.argv else (
-        "word" if "--source" in sys.argv and "word" in sys.argv else "auto")
+    source = "review" if "--review" in sys.argv else (
+        "wiki" if "--source" in sys.argv and "wiki" in sys.argv else (
+        "word" if "--source" in sys.argv and "word" in sys.argv else "auto"))
 
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 每日英语 v2.0 启动")
     print(f"  提供商: {AI_PROVIDER} | 模型: {AI_MODEL} | 难度: {LEVEL} | 源: {source}")
@@ -502,7 +562,55 @@ def main():
                 state["wordsUsed"].append(v["word"])
         save_state(state)
 
+        # Auto-register vocab for SM-2 review
+        rstate = load_review_state()
+        rstate = add_words_batch(rstate, lesson.get("vocab", []))
+        rstate["last_review"] = rstate.get("last_review", datetime.now().strftime("%Y-%m-%d"))
+        save_review_state(rstate)
+
         card = format_vocab_card(lesson, state["currentCategory"])
+
+    # ── Mode D: SM-2 Review ──
+    if source == "review":
+        print("\n--- SM-2 间隔复习模式 ---")
+        rstate = load_review_state()
+        due = get_due_words(rstate)
+        stats = get_stats(rstate)
+        print(f"  词汇库: {stats['total']} 词 | 待复习: {stats['due']} 词 | 已掌握: {stats['mastered']} 词")
+
+        if not due:
+            print("  今天没有需要复习的词汇！")
+            card = _build_card(f"✅ 复习完成 | {datetime.now().strftime('%Y-%m-%d')}", "green",
+                f"词汇库共 **{stats['total']}** 词，今天没有需要复习的。\n\n已掌握 **{stats['mastered']}** 词（间隔≥30天）\n平均易度: **{stats['avg_ease_factor']}**",
+                None, "")
+        else:
+            # Take up to 5 due words
+            review_words = due[:5]
+            print(f"  复习词: {', '.join(w['word'] for w in review_words)}")
+
+            # Generate review content with AI
+            lesson = None
+            if AI_API_KEY and not mock:
+                print(f"  调用 {AI_PROVIDER} 生成复习题...")
+                lesson = _generate_review_quiz(review_words)
+            if not lesson:
+                lesson = {"words": review_words, "tip": "自测：看到英文能否立刻说出中文意思？想不起来就标记 0-2 分。"}
+
+            card = format_review_card(lesson, review_words)
+
+        # Update last_review date
+        rstate["last_review"] = datetime.now().strftime("%Y-%m-%d")
+        save_review_state(rstate)
+
+    # Auto-register words from wiki/word modes into SM-2
+    if source in ("wiki", "word"):
+        rstate = load_review_state()
+        if source == "wiki" and lesson:
+            rstate = add_words_batch(rstate, lesson.get("key_vocab", []))
+        elif source == "word" and lesson:
+            rstate = add_word(rstate, lesson.get("word",""), lesson.get("meaning_cn",""),
+                            lesson.get("ipa",""), lesson.get("collocations",[""])[0] if lesson.get("collocations") else "")
+        save_review_state(rstate)
 
     # Push
     print("\n--- 推送 ---")

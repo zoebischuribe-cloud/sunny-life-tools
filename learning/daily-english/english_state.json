@@ -1,14 +1,9 @@
 {
-  "currentCategory": 1,
-  "daysOnCategory": 1,
+  "currentCategory": 2,
+  "daysOnCategory": 0,
   "lastRun": "2026-05-17",
   "wordsUsed": [
-    "recipe",
-    "basically",
     "symptom",
-    "fever",
-    "sore throat",
-    "appointment",
-    "medicine"
+    "basically"
   ]
 }

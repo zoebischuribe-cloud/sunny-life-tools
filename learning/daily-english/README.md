@@ -7,6 +7,7 @@
 - **🗣️ 主题口语模式**：两段式课程（实用口语 + 主题词汇），12 类轮换
 - **📰 Wikipedia 阅读模式**：随机英文文章 → AI 阅读课（语法+词汇+技巧）
 - **🔤 每日一词模式**：随机单词 → AI 词汇课（记忆技巧+场景+搭配）
+- **🔄 SM-2 间隔复习**：自动追踪所有词汇，计算最优复习时间，推送复习卡片
 - **🧠 9 种大模型可选**：MiniMax / DeepSeek / OpenAI / Groq / 硅基流动 / Moonshot / 智谱 / 通义千问 / Ollama
 - **📊 三级难度**：初级（小学生）/ 中级（初高中）/ 高级（大学职场）
 - **🛡️ 容错降级**：所有模式均有无 AI 回退方案
@@ -20,10 +21,13 @@
     │      Wikipedia API (免费) / Free Dictionary (免费) / 12主题库
     │
     ├─ 2. AI 生成内容 (daily_english.py v2.0)
-    │      MiniMax M2.7 生成阅读课 / 词汇课 / 口语课
+    │      MiniMax M2.7 → 阅读课 / 词汇课 / 口语课 / 复习课
     │
-    └─ 3. 飞书推送
-           三种卡片样式：阅读(绿) / 词汇(黄) / 口语(蓝)
+    ├─ 3. SM-2 间隔复习 (sm2.py)
+    │      自动追踪所有词汇 → 计算最优复习时间 → 推送复习卡片
+    │
+    └─ 4. 飞书推送
+           四种卡片：阅读(绿) / 词汇(黄) / 口语(蓝) / 复习(紫)
 ```
 
 ## 快速开始
@@ -108,9 +112,11 @@ Register-ScheduledTask -TaskName "每日英语推送" -Action $Action -Trigger $
 
 | 文件 | 作用 |
 |------|------|
-| [`daily_english.py`](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/learning/daily-english/daily_english.py) | 主入口 |
+| [`daily_english.py`](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/learning/daily-english/daily_english.py) | 主入口，4 种模式 |
+| [`sm2.py`](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/learning/daily-english/sm2.py) | SM-2 间隔复习算法 |
 | [`config.py`](https://github.com/zoebischuribe-cloud/sunny-life-tools/blob/master/learning/daily-english/config.py) | 9 种大模型 + 飞书配置 |
 | `english_state.json` | 轮换状态（自动维护） |
+| `review_state.json` | SM-2 词汇复习库（自动维护） |
 
 ## 成本
 
