@@ -31,8 +31,71 @@ from config import (
 
 # ── Content Sources ──
 
+# High-quality topics for English learning (exam/business/tech/geography focused)
+TOPICS = [
+    {"name": "Artificial Intelligence", "cn": "人工智能", "search": "artificial intelligence technology"},
+    {"name": "Climate & Environment", "cn": "气候环境", "search": "climate change environment"},
+    {"name": "Global Economy", "cn": "全球经济", "search": "economy business finance"},
+    {"name": "Space & Science", "cn": "太空科学", "search": "space exploration science discovery"},
+    {"name": "World History", "cn": "世界历史", "search": "world history civilization"},
+    {"name": "Health & Medicine", "cn": "健康医学", "search": "health medicine medical research"},
+    {"name": "Technology & Innovation", "cn": "科技创新", "search": "technology innovation engineering"},
+    {"name": "Nature & Geography", "cn": "自然地理", "search": "nature geography wildlife"},
+    {"name": "Culture & Arts", "cn": "文化艺术", "search": "culture art literature music"},
+    {"name": "Sports & Adventure", "cn": "体育探险", "search": "sports adventure exploration"},
+    {"name": "Psychology & Brain", "cn": "心理脑科学", "search": "psychology neuroscience brain"},
+    {"name": "Food & Travel", "cn": "美食旅行", "search": "food cuisine travel destination"},
+]
+
+def fetch_wikipedia_by_topic(topic_idx=None):
+    """Fetch a Wikipedia article matching a curated topic. Falls back to random if search fails."""
+    if topic_idx is None:
+        topic_idx = datetime.now().day % len(TOPICS)
+    topic = TOPICS[topic_idx % len(TOPICS)]
+    search_term = topic["search"]
+
+    try:
+        # Search Wikipedia for topic
+        r = requests.get(
+            "https://en.wikipedia.org/w/api.php",
+            params={
+                "action": "query", "list": "search", "srsearch": search_term,
+                "srlimit": 20, "format": "json",
+            },
+            headers={"User-Agent": "DailyEnglishBot/1.0"},
+            proxies=PROXIES, timeout=15,
+        )
+        if r.status_code == 200:
+            results = r.json().get("query", {}).get("search", [])
+            if results:
+                # Pick a random result from top 10 to avoid always the same
+                import random as _random
+                chosen = _random.choice(results[:10])
+                title = chosen["title"]
+                # Get summary
+                sr = requests.get(
+                    f"https://en.wikipedia.org/api/rest_v1/page/summary/{requests.utils.quote(title)}",
+                    headers={"User-Agent": "DailyEnglishBot/1.0"},
+                    proxies=PROXIES, timeout=15, allow_redirects=True,
+                )
+                if sr.status_code == 200:
+                    data = sr.json()
+                    return {
+                        "title": data.get("title", title),
+                        "extract": data.get("extract", "")[:1500],
+                        "description": data.get("description", ""),
+                        "url": data.get("content_urls", {}).get("desktop", {}).get("page", ""),
+                        "thumbnail": data.get("thumbnail", {}).get("source", ""),
+                        "topic": topic,
+                    }
+    except Exception as e:
+        print(f"  Wikipedia topic search error: {e}")
+
+    # Fallback to random
+    return fetch_wikipedia_random()
+
 def fetch_wikipedia_random():
-    """Fetch a random English Wikipedia article summary. Free, no API key."""
+    """Fetch a random English Wikipedia article summary (fallback)."""
     try:
         r = requests.get(
             "https://en.wikipedia.org/api/rest_v1/page/random/summary",
@@ -75,6 +138,64 @@ def fetch_wikipedia_featured(date_str=None):
     except Exception as e:
         print(f"  Wikipedia featured error: {e}")
     return None
+
+def search_youtube_video(query, max_results=5):
+    """Search YouTube for educational videos (no API key needed — uses search URL)."""
+    import urllib.parse
+    encoded = urllib.parse.quote(f"{query} educational")
+    search_url = f"https://www.youtube.com/results?search_query={encoded}"
+
+    # Try Invidious as no-key API for video metadata
+    try:
+        r = requests.get(
+            "https://inv.nadeko.net/api/v1/search",
+            params={"q": f"{query} educational", "type": "video", "sort": "relevance"},
+            headers={"User-Agent": "DailyEnglishBot/1.0"},
+            proxies=PROXIES, timeout=12,
+        )
+        if r.status_code == 200 and isinstance(r.json(), list):
+            top = r.json()[:max_results]
+            return [{
+                "title": v.get("title",""),
+                "url": f"https://www.youtube.com/watch?v={v.get('videoId','')}",
+                "author": v.get("author",""),
+                "length": f"{v.get('lengthSeconds',0)//60}min",
+                "views": v.get("viewCount",0),
+            } for v in top if v.get("videoId")]
+    except Exception:
+        pass
+
+    # Fallback: search URL button
+    return [{"title": f"Search YouTube for '{query}'", "url": search_url, "author": "YouTube", "length": "", "views": 0}]
+
+def search_bilibili_english(query, max_results=3):
+    """Search Bilibili for English learning content on the topic."""
+    try:
+        r = requests.get(
+            "https://api.bilibili.com/x/web-interface/search/type",
+            params={"search_type": "video", "keyword": f"{query} 英语 TED 科普", "page": 1, "order": "totalrank"},
+            headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                "Referer": "https://www.bilibili.com/",
+            },
+            proxies=PROXIES, timeout=12,
+        )
+        if r.status_code == 200:
+            data = r.json()
+            if data.get("code") == 0:
+                results = []
+                for item in data.get("data",{}).get("result",[])[:max_results]:
+                    bvid = item.get("bvid","")
+                    results.append({
+                        "title": item.get("title","").replace('<em class="keyword">','').replace('</em>',''),
+                        "url": f"https://www.bilibili.com/video/{bvid}",
+                        "author": item.get("author",""),
+                        "views": item.get("play",0),
+                    })
+                return results
+    except Exception:
+        pass
+    return []
 
 def fetch_random_word():
     """Fetch a random English word from Free Dictionary API."""
@@ -268,11 +389,24 @@ def generate_ted_lesson(wiki_data):
     )
     return _call_ai(system_prompt, user_prompt)
 
-def format_ted_card(lesson, wiki_data):
-    """Build TED-style deep learning card for Feishu."""
+def format_ted_card(lesson, wiki_data, yt_videos=None, bl_videos=None):
+    """Build TED-style deep learning card with video links."""
     today = datetime.now().strftime("%Y-%m-%d")
     shadowing = lesson.get("shadowing_text","")
     tips = "\n".join(f"• {t}" for t in lesson.get("shadowing_tips",[]))
+
+    # Video links section
+    video_section = ""
+    if yt_videos or bl_videos:
+        video_section = "\n━━━━━━━━━━━━━━━━━━\n\n**📺 推荐视频**\n"
+        if yt_videos:
+            for v in yt_videos[:2]:
+                video_section += f"• [{v.get('title','')[:60]}]({v.get('url','')})"
+                video_section += f" ({v.get('author','')})\n" if v.get('author') else "\n"
+        if bl_videos:
+            for v in bl_videos[:2]:
+                video_section += f"• [B站] {v.get('title','')[:60]}({v.get('url','')})\n"
+
     content = (
         f"**🎤 TED 深度学习**\n\n"
         f"**{wiki_data.get('title','')}**\n"
@@ -289,10 +423,15 @@ def format_ted_card(lesson, wiki_data):
         f"**📝 复述任务**\n{lesson.get('retell_prompt','')}\n\n"
         f"**💡 文化背景**\n{lesson.get('culture_note','')}\n\n"
         f"**🎯 今日挑战**\n{lesson.get('challenge','')}"
+        + video_section
     )
     header = f"🎤 TED 英语课 | {today}"
-    url = wiki_data.get("url","")
-    return _build_card(header, "red", content, url, "📖 阅读全文" if url else "")
+
+    # Primary button: best video URL or Wikipedia
+    primary_url = (yt_videos[0]["url"] if yt_videos and len(yt_videos)>0 else
+                   (bl_videos[0]["url"] if bl_videos and len(bl_videos)>0 else wiki_data.get("url","")))
+    primary_btn = "📺 看讲解视频" if (yt_videos or bl_videos) else ("📖 阅读全文" if wiki_data.get("url") else "")
+    return _build_card(header, "red", content, primary_url, primary_btn)
 
 def generate_word_lesson(word_data):
     """Generate a word-of-the-day mini lesson."""
@@ -391,7 +530,7 @@ def format_vocab_card(lesson, category_idx):
         url = f"https://youglish.com/pronounce/{lesson['phrase'].replace(' ','+')}/english/us"
     return _build_card(header, "blue", content, url, "🔊 听发音 (YouGlish)")
 
-def format_wiki_card(lesson, wiki_data):
+def format_wiki_card(lesson, wiki_data, yt_videos=None, bl_videos=None):
     today = datetime.now().strftime("%Y-%m-%d")
     vl = "\n".join(
         f"**{i+1}. {v.get('word','')}** {v.get('ipa','')}\n"
@@ -399,8 +538,16 @@ def format_wiki_card(lesson, wiki_data):
         f"　📖 {v.get('sentence','')}"
         for i, v in enumerate(lesson.get("key_vocab", []))
     )
+    video_section = ""
+    if yt_videos or bl_videos:
+        video_section = "\n\n**📺 推荐视频**\n"
+        if yt_videos:
+            video_section += f"• [YouTube] {yt_videos[0].get('title','')[:60]}({yt_videos[0].get('url','')})\n" if yt_videos else ""
+        if bl_videos:
+            video_section += f"• [B站] {bl_videos[0].get('title','')[:60]}({bl_videos[0].get('url','')})\n" if bl_videos else ""
+
     content = (
-        f"**📰 今日阅读** | Wikipedia\n\n"
+        f"**📰 今日阅读**\n\n"
         f"**{wiki_data.get('title','')}**\n"
         f"_{wiki_data.get('description','')}_\n\n"
         f"📝 **中文摘要**\n{lesson.get('summary_cn','')}\n\n"
@@ -408,10 +555,12 @@ def format_wiki_card(lesson, wiki_data):
         f"━━━━━━━━━━━━━━━━━━\n\n"
         f"**📚 重点词汇**\n\n{vl}\n\n"
         f"💡 **阅读技巧**\n{lesson.get('reading_tip','')}"
+        + video_section
     )
     header = f"📰 英语阅读 | {today}"
-    url = wiki_data.get("url", "")
-    return _build_card(header, "green", content, url, "📖 阅读全文 (Wikipedia)" if url else "")
+    primary_url = (yt_videos[0]["url"] if yt_videos else (wiki_data.get("url","")))
+    primary_btn = "📺 看视频讲解" if yt_videos else ("📖 阅读全文" if wiki_data.get("url") else "")
+    return _build_card(header, "green", content, primary_url, primary_btn)
 
 def format_word_card(lesson):
     today = datetime.now().strftime("%Y-%m-%d")
@@ -522,6 +671,17 @@ def format_review_card(lesson, review_words):
 def main():
     dry = "--dry" in sys.argv
     mock = "--mock" in sys.argv
+    topic_arg = None
+    if "--topic" in sys.argv:
+        idx = sys.argv.index("--topic")
+        if idx + 1 < len(sys.argv) and sys.argv[idx+1].isdigit():
+            topic_arg = int(sys.argv[idx+1])
+        elif "--topic" in sys.argv and "--list" in sys.argv:
+            print("可用话题：")
+            for i, t in enumerate(TOPICS):
+                print(f"  {i}: {t['name']}（{t['cn']}）")
+            return 0
+
     source = "review" if "--review" in sys.argv else (
         "ted" if "--source" in sys.argv and "ted" in sys.argv else (
         "wiki" if "--source" in sys.argv and "wiki" in sys.argv else (
@@ -535,10 +695,12 @@ def main():
     # ── Mode A: TED Deep Lesson ──
     if source == "ted":
         print("\n--- TED 深度学习模式 ---")
-        wiki = fetch_wikipedia_random()
+        wiki = fetch_wikipedia_by_topic(topic_arg)
         if not wiki:
             wiki = fetch_wikipedia_featured()
         if wiki:
+            topic_info = wiki.get("topic", {})
+            print(f"  话题: {topic_info.get('name','')}（{topic_info.get('cn','')}）")
             print(f"  文章: {wiki['title'][:60]}")
             lesson = None
             if AI_API_KEY and not mock:
@@ -558,7 +720,11 @@ def main():
                     "culture_note": "这篇内容反映了英语世界的知识传统",
                     "challenge": "大声朗读跟读段落10遍，录下来自己听",
                 }
-            card = format_ted_card(lesson, wiki)
+            # Search related videos
+            print("  搜索相关视频...")
+            yt_videos = search_youtube_video(f"TED talk {wiki.get('title','')} {topic_info.get('name','')}")
+            bl_videos = search_bilibili_english(f"{topic_info.get('name','')} {wiki.get('title','')}")
+            card = format_ted_card(lesson, wiki, yt_videos, bl_videos)
             # Track key vocab
             rstate = load_review_state()
             words = re.findall(r'[A-Z][a-z]{5,20}', wiki.get("extract","")[:300])
@@ -572,10 +738,12 @@ def main():
     # ── Mode B: Wikipedia Reading ──
     if source == "wiki":
         print("\n--- Wikipedia 阅读模式 ---")
-        wiki = fetch_wikipedia_random()
+        wiki = fetch_wikipedia_by_topic(topic_arg)
         if not wiki:
             wiki = fetch_wikipedia_featured()
         if wiki:
+            topic_info = wiki.get("topic", {})
+            print(f"  话题: {topic_info.get('name','')}（{topic_info.get('cn','')}）")
             print(f"  文章: {wiki['title'][:60]}")
             lesson = None
             if AI_API_KEY and not mock:
@@ -593,7 +761,9 @@ def main():
                     "grammar_point": "观察文章中的时态和语态使用",
                     "reading_tip": "先读首段了解大意，再逐段精读",
                 }
-            card = format_wiki_card(lesson, wiki)
+            yt_videos = search_youtube_video(f"{wiki.get('title','')} explained")
+            bl_videos = search_bilibili_english(f"{topic_info.get('name','')} 科普")
+            card = format_wiki_card(lesson, wiki, yt_videos, bl_videos)
             print(f"  词汇数: {len(lesson.get('key_vocab',[]))}")
         else:
             print("  Wikipedia 不可用，回退口语模式")
