@@ -4,26 +4,26 @@
 
 ## 特性
 
-- **🗣️ 两段式课程**：Part 1 实用口语（场景+变体+回法）+ Part 2 主题词汇（IPA+例句+记忆技巧）
-- **🔄 12 类主题轮换**：饮食/健康/居家/职场/运动/购物/出行/宠物/家务/娱乐/理财/天气，每月一循环
+- **🗣️ 主题口语模式**：两段式课程（实用口语 + 主题词汇），12 类轮换
+- **📰 Wikipedia 阅读模式**：随机英文文章 → AI 阅读课（语法+词汇+技巧）
+- **🔤 每日一词模式**：随机单词 → AI 词汇课（记忆技巧+场景+搭配）
 - **🧠 9 种大模型可选**：MiniMax / DeepSeek / OpenAI / Groq / 硅基流动 / Moonshot / 智谱 / 通义千问 / Ollama
 - **📊 三级难度**：初级（小学生）/ 中级（初高中）/ 高级（大学职场）
-- **🛡️ 容错降级**：AI 不可用时自动切换内置词库
-- **🔊 发音示范**：每条口语带 YouGlish 按钮，一键听真人发音
+- **🛡️ 容错降级**：所有模式均有无 AI 回退方案
 
 ## 架构
 
 ```
 每日定时触发 (Windows Task Scheduler)
     │
-    ├─ 1. 状态管理
-    │      12类主题 2天轮换 + 词汇去重
+    ├─ 1. 内容源
+    │      Wikipedia API (免费) / Free Dictionary (免费) / 12主题库
     │
-    ├─ 2. AI 生成内容 (daily_english.py)
-    │      MiniMax M2.7 生成口语 + 词汇 + 记忆技巧
+    ├─ 2. AI 生成内容 (daily_english.py v2.0)
+    │      MiniMax M2.7 生成阅读课 / 词汇课 / 口语课
     │
     └─ 3. 飞书推送
-           蓝色标题卡片 + YouGlish 发音按钮
+           三种卡片样式：阅读(绿) / 词汇(黄) / 口语(蓝)
 ```
 
 ## 快速开始
@@ -57,14 +57,17 @@ pip install requests
 ```bash
 cd learning/daily-english
 
-# Dry run（不推送）
+# 主题口语模式（默认，12类轮换）
 python daily_english.py --dry
 
-# 规则引擎模式（无需 AI）
-python daily_english.py --mock --dry
+# Wikipedia 阅读模式（随机英文文章）
+python daily_english.py --source wiki --dry
 
-# 正式运行
-python daily_english.py
+# 每日一词模式
+python daily_english.py --source word --dry
+
+# 规则引擎模式（无需 AI，所有模式通用）
+python daily_english.py --mock --dry
 ```
 
 ### 4. 定时任务
