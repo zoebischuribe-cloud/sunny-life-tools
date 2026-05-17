@@ -241,6 +241,59 @@ def generate_wiki_lesson(wiki_data):
     )
     return _call_ai(system_prompt, user_prompt)
 
+def generate_ted_lesson(wiki_data):
+    """Generate a deep TED-style lesson: background + shadowing + grammar + retell."""
+    if not wiki_data:
+        return None
+    level_hint = LEVEL_HINTS.get(LEVEL, LEVEL_HINTS["intermediate"])
+    system_prompt = (
+        "你是一位TED演讲教练。拿到一篇英文文章后，把它变成一堂完整的英语深度学习课。\n"
+        f"{level_hint}\n"
+        "返回纯JSON：\n"
+        '{"title":"文章标题","background":"背景知识(50字，中英双语)",'
+        '"shadowing_text":"选一段100-150词的英文原文(完整段落，适合跟读)",'
+        '"shadowing_cn":"跟读段落的中文翻译",'
+        '"shadowing_tips":["发音重点1","发音重点2","发音重点3"],'
+        '"grammar_deep":"深入讲解一个语法点(连读/弱读/时态/从句，选最有价值的)",'
+        '"grammar_example":"语法点的例句(标注音变/连读)",'
+        '"retell_prompt":"请用户用自己的话复述这段话(中英提示)",'
+        '"culture_note":"文化背景知识(30字)",'
+        '"challenge":"今日挑战任务(20字)"}'
+    )
+    user_prompt = (
+        f"标题：{wiki_data.get('title','')}\n"
+        f"英文全文：{wiki_data.get('extract','')[:2000]}\n"
+        f"描述：{wiki_data.get('description','')}\n"
+        "请生成TED风格深度学习课（含跟读段落+语法深度讲解+复述任务）。"
+    )
+    return _call_ai(system_prompt, user_prompt)
+
+def format_ted_card(lesson, wiki_data):
+    """Build TED-style deep learning card for Feishu."""
+    today = datetime.now().strftime("%Y-%m-%d")
+    shadowing = lesson.get("shadowing_text","")
+    tips = "\n".join(f"• {t}" for t in lesson.get("shadowing_tips",[]))
+    content = (
+        f"**🎤 TED 深度学习**\n\n"
+        f"**{wiki_data.get('title','')}**\n"
+        f"_{wiki_data.get('description','')}_\n\n"
+        f"📖 **背景知识**\n{lesson.get('background','')}\n\n"
+        f"━━━━━━━━━━━━━━━━━━\n\n"
+        f"**🗣️ 跟读训练（Repeat 10x）**\n\n"
+        f"{shadowing}\n\n"
+        f"中文翻译：{lesson.get('shadowing_cn','')}\n\n"
+        f"**发音重点：**\n{tips}\n\n"
+        f"━━━━━━━━━━━━━━━━━━\n\n"
+        f"**🔍 语法深度讲解**\n{lesson.get('grammar_deep','')}\n"
+        f"例句：_{lesson.get('grammar_example','')}_\n\n"
+        f"**📝 复述任务**\n{lesson.get('retell_prompt','')}\n\n"
+        f"**💡 文化背景**\n{lesson.get('culture_note','')}\n\n"
+        f"**🎯 今日挑战**\n{lesson.get('challenge','')}"
+    )
+    header = f"🎤 TED 英语课 | {today}"
+    url = wiki_data.get("url","")
+    return _build_card(header, "red", content, url, "📖 阅读全文" if url else "")
+
 def generate_word_lesson(word_data):
     """Generate a word-of-the-day mini lesson."""
     if not word_data:
@@ -470,15 +523,53 @@ def main():
     dry = "--dry" in sys.argv
     mock = "--mock" in sys.argv
     source = "review" if "--review" in sys.argv else (
+        "ted" if "--source" in sys.argv and "ted" in sys.argv else (
         "wiki" if "--source" in sys.argv and "wiki" in sys.argv else (
-        "word" if "--source" in sys.argv and "word" in sys.argv else "auto"))
+        "word" if "--source" in sys.argv and "word" in sys.argv else "auto")))
 
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 每日英语 v2.0 启动")
     print(f"  提供商: {AI_PROVIDER} | 模型: {AI_MODEL} | 难度: {LEVEL} | 源: {source}")
 
     state = load_state()
 
-    # ── Mode A: Wikipedia Article ──
+    # ── Mode A: TED Deep Lesson ──
+    if source == "ted":
+        print("\n--- TED 深度学习模式 ---")
+        wiki = fetch_wikipedia_random()
+        if not wiki:
+            wiki = fetch_wikipedia_featured()
+        if wiki:
+            print(f"  文章: {wiki['title'][:60]}")
+            lesson = None
+            if AI_API_KEY and not mock:
+                print(f"  调用 {AI_PROVIDER} 生成TED深度学习课...")
+                lesson = generate_ted_lesson(wiki)
+            if not lesson:
+                extract = wiki.get("extract","")[:300]
+                lesson = {
+                    "title": wiki.get("title","Untitled"),
+                    "background": f"This is about {wiki.get('title','')}. {wiki.get('description','')}",
+                    "shadowing_text": extract[:200] if extract else "No text available for shadowing.",
+                    "shadowing_cn": "请自行翻译跟读段落",
+                    "shadowing_tips": ["注意重音和语调", "连读时辅音+元音要自然", "模仿原声的节奏感"],
+                    "grammar_deep": "注意段落中的时态一致性（tense consistency），同一段落内时态通常保持一致",
+                    "grammar_example": extract[:80] if extract else "",
+                    "retell_prompt": "请用自己的话复述这段文字的主要观点（中英文均可尝试）",
+                    "culture_note": "这篇内容反映了英语世界的知识传统",
+                    "challenge": "大声朗读跟读段落10遍，录下来自己听",
+                }
+            card = format_ted_card(lesson, wiki)
+            # Track key vocab
+            rstate = load_review_state()
+            words = re.findall(r'[A-Z][a-z]{5,20}', wiki.get("extract","")[:300])
+            for w in set(words[:5]):
+                rstate = add_word(rstate, w.lower(), "来自TED深度课", "", "")
+            save_review_state(rstate)
+        else:
+            print("  Wikipedia 不可用，回退口语模式")
+            source = "auto"
+
+    # ── Mode B: Wikipedia Reading ──
     if source == "wiki":
         print("\n--- Wikipedia 阅读模式 ---")
         wiki = fetch_wikipedia_random()
